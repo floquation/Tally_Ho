@@ -1,6 +1,7 @@
 package nl.kevinvanas.tally_ho.stages;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -14,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import nl.kevinvanas.tally_ho.game.game_objects.TileEnum;
+import nl.kevinvanas.tally_ho.game.game_objects.Tile;
 import nl.kevinvanas.tally_ho.ui.MyHorizontalGroup;
 import nl.kevinvanas.tally_ho.ui.MyLabel;
 import nl.kevinvanas.tally_ho.utils.Constants;
@@ -88,6 +89,15 @@ public class GameUIStage extends Stage {
             nr.setWrap(false);
         }
 
+        protected void markActive(boolean active){
+            if(active){
+                System.out.println("(GameUIStage) Mark " + this.nr.getText() + " as active player.");
+                this.name.setColor(Color.CYAN);
+            }else{
+                System.out.println("(GameUIStage) Mark " + this.nr.getText() + " as inactive player.");
+                this.name.setColor(Color.WHITE);            }
+        }
+
         @Override
         protected void sizeChanged() {
             float width = getWidth(); float height = getHeight();
@@ -116,6 +126,14 @@ public class GameUIStage extends Stage {
             icon.setMinHeight(iconWidth);
             name.setWidth(nameWidth);
 
+            score.setHeight(iconWidth);
+            name.setHeight(iconWidth);
+            nr.setHeight(iconWidth);
+
+            name.maximiseFontSize();
+//            System.out.println("Same styles? " + (name.style==nr.style));
+//            score.maximiseFontSize();
+
             super.sizeChanged();
         }
     }
@@ -124,12 +142,10 @@ public class GameUIStage extends Stage {
         player1row = new playerRow();
         player1row.nr.setText("1.");
         player1row.name.setText("player1player1player1");
-        this.setPlayer1Icon(TileEnum.bear.getTexture());
 
         player2row = new playerRow();
         player2row.nr.setText("2.");
         player2row.name.setText("player2");
-        this.setPlayer1Icon(TileEnum.hunter.getTexture());
     }
 
     private void createDetailScores(){
@@ -249,16 +265,36 @@ public class GameUIStage extends Stage {
      */
     public void onResize(int width, int height){
         System.out.println("On resize.");
+
+//        System.out.println("Same styles? player1==player2 " + (player1row.name.style==player2row.name.style)); //true
+//        System.out.println("Same font? player1==player2 " + (player1row.name.style.font == player2row.name.style.font)); //true
+//        System.out.println("Same scaleY? player1==player2 " + (player1row.name.style.font.getScaleY() == player2row.name.style.font.getScaleY())); //true
+
         player1row.setSize(width, height / 10f);
         player2row.setSize(width, height / 10f);
 
         buttonRow.setSize(width,height / 5f);
 //        buttonRow.setPosition(0,4*height/5f);
+
+//        System.out.println("scale = " + (width/(float)Constants.APP_WIDTH));
+//        player2row.name.setFontScale(width/(float)Constants.APP_WIDTH);
     }
 
     public void setScores(int score1, int score2){
         player1row.score.setText("" + score1);
         player2row.score.setText("" + score2);
+    }
+    public void addScoreTile(Tile tile){
+        System.out.println("(GameUIStage) NOT YET IMPLEMENTED: addScoreTile");
+    }
+    public void setActivePlayer(int player){
+        if(player==0){
+            player1row.markActive(true);
+            player2row.markActive(false);
+        }else{
+            player2row.markActive(true);
+            player1row.markActive(false);
+        }
     }
 
     public void setPlayer1Icon(Texture texture){

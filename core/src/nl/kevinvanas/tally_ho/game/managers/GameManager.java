@@ -62,6 +62,7 @@ public class GameManager {
      */
     public void beforeFirstTurn(){
         turnmgr.beforeFirstTurn();
+        uistage.setActivePlayer(turnmgr.getActivePlayerNumber());
     }
 
     /**
@@ -71,6 +72,8 @@ public class GameManager {
      */
     public void onNextTurn(){
         turnmgr.checkFinalPhase();
+        uistage.setActivePlayer(turnmgr.getActivePlayerNumber());
+        //TODO: Show final phase countdown in UI
     }
 
     /**

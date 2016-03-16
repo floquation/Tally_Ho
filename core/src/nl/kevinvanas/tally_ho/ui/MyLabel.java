@@ -22,7 +22,7 @@ public class MyLabel extends Actor {
     static private final Color tempColor = new Color();
     private BitmapFontCache cache;
 
-    private Label.LabelStyle style;
+    public Label.LabelStyle style;
     private String text0;
 
     private int labelAlign = Align.left; //TODO: Align.Center doesn't behave properly (text may go outside of the bounds on the right side)
@@ -36,6 +36,8 @@ public class MyLabel extends Actor {
 
     private boolean constructorRunning = true;
 
+    private boolean invalid = true;
+
     public MyLabel (String text, Label.LabelStyle style, float width, float height) {
         setSize(width, height);
         setStyle(style);
@@ -44,7 +46,6 @@ public class MyLabel extends Actor {
         }
 
         constructorRunning = false;
-        computeText(); // Compute the text position
     }
 
     public MyLabel (String text, Label.LabelStyle style, float width) {
@@ -55,7 +56,11 @@ public class MyLabel extends Actor {
         if (newText == null) newText = "";
         if (newText.equals(text0)) return;
         this.text0 = newText;
-        computeText();
+        invalid=true;
+    }
+
+    public String getText(){
+        return text0;
     }
 
     public void setStyle (Label.LabelStyle style) {
@@ -66,10 +71,37 @@ public class MyLabel extends Actor {
         cache.setText(layout, 0, 0);
     }
 
+    public void setFontScale(float scaleXY){
+        this.fontScaleX=scaleXY;
+        this.fontScaleY=scaleXY;
+//        style.font.getData().setScale(scaleXY); // If you do this, you change the font of ALL LABELS, instead of only this label.
+        invalid=true;
+    }
+
+    public void maximiseFontSize(){
+        float height=this.getHeight(); float width=this.getWidth();
+        System.out.println("Label \"" + this.getText() + "\"");
+        System.out.println("label height = " + height);
+        System.out.println("lineheight = " + style.font.getData().lineHeight);
+        System.out.println("lineheight2 = " + style.font.getLineHeight());
+        System.out.println("layout width = " + layout.width);
+        System.out.println("xHeight = " + style.font.getData().xHeight);
+        float scale=height/style.font.getLineHeight();
+        if(!wrap && scale*layout.width > width){
+            // No wrap, and new font size is too big.
+            // Maximise the width instead
+            scale=width/layout.width;
+        }
+        System.out.println("Chosen scale = " + scale);
+        setFontScale(scale);
+        invalid=true;
+    }
+
     private void computeText(){
         if(constructorRunning){ // Do not do this during the constructor call.
             return;
         }
+        System.out.println("(MyLabel) \"" + getText() +"\" computeText()");
         BitmapFont font = cache.getFont();
         float oldScaleX = font.getScaleX();
         float oldScaleY = font.getScaleY();
@@ -123,6 +155,8 @@ public class MyLabel extends Actor {
     }
 
     public void draw (Batch batch, float parentAlpha) {
+        if(invalid) {invalid=false; computeText(); computeText();} //TODO: WHY DO I NEED TO CALL IT TWICE TO PROPERLY POSITION MY TEXT???
+
         Color color = tempColor.set(getColor());
         color.a *= parentAlpha;
         if (style.background != null) {
@@ -143,15 +177,20 @@ public class MyLabel extends Actor {
         }else{
             wrapText = null;
         }
+        invalid=true;
     }
     public void setWrap(String wrapText){
         this.wrapText=wrapText;
         wrap = (wrapText != null);
+        invalid=true;
     }
-    public void setWrapText(String s){wrapText=s;}
+    public void setWrapText(String s){
+        wrapText=s;
+        invalid=true;
+    }
 
     @Override
     protected void sizeChanged() {
-        this.computeText();
+        invalid=true;
     }
 }
